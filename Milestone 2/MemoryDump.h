@@ -4,7 +4,7 @@ class MemDump {
     static map <size_t, string> prevMap;
     static map <size_t, string> curMap;
 public:
-    static void createDump(map <size_t, string> inputMap) {
+    static void createDump(+map <size_t, string> inputMap) {
         prevMap = curMap;
         curMap = inputMap;
         cout << "MEMORY\n       00     01     02     03     04     05     06     07     08     09" << endl;
