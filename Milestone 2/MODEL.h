@@ -1,16 +1,21 @@
-//Includes
+#ifndef MODEL_H
+#define MODEL_H
+#include <utility>
+
 #include "MemoryDump.h"
 #include "CPU.h"
 #include "VIEW.h"
 #include "MEMORY.h"
 
 class MODEL{
-
+    MEMORY memory;
+    VIEW& view;
+    CPU cpu = CPU(view); //view is just a reference. Once the constructor reassigns view, it will cascade.
 
 public:
-    VIEW view;
-    MEMORY memory;
-    MODEL(VIEW &v, MEMORY &m): view(v), memory(m){};
+    //MemDump& memDump;
+
+    MODEL(VIEW& v) : view(v){}
 
     //variables
     string userNum;
@@ -18,26 +23,36 @@ public:
 
     //functions
     bool hasMemory(){
-        if(memory.inputMap[0] != " "){
+        if(!memory.inputMap.empty()){
             return true;
         }
+        return false;
     }
 
-    ///how to get this working
+    map<size_t, string> GetMemory(){return memory.getMap();}
+
+    ///TODO
     void runCPU(){
-        runCPU(memory.inputMap);
+//        CPU cpu(view);
+        cpu.runCPU(memory.getMap());
+        MemDump::createDump(cpu);
     }
 
     ///not totally sure what this is supposed to accomplish yet. I think I got it though.
     void updateMenu(int page){
-        view.Display(page);
+        if(page == 6 && hasMemory()){
+            view.ContinueEdit(memory);
+        }
+        else
+            view.Display(page);
     };
 
-    void loadMemory(MEMORY);  ///this function is probably not needed.
+    //void loadMemory(MEMORY);  ///this function is probably not needed.
 
     void updateMemory(string uInput, int memLocation){
         ///this is going to call on memory.h to make things add to memory
         ///memlocation is going to be from 0-99
-        memory.add(uInput, memLocation);
+        memory.add(move(uInput), memLocation);
     }
 };
+#endif

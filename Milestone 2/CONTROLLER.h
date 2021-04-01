@@ -1,6 +1,8 @@
-//Includes
+#ifndef CONTROLLER_H
+#define CONTROLLER_H
 #include "MODEL.h"
 #include <fstream>
+#include <filesystem>
 
 class CONTROLLER{
     MODEL& model;
@@ -29,7 +31,7 @@ public:
     {
         bool done = false;
         // MemSize is used to place input at the end of map to avoid overwriting data
-        int memSize = model.memory.inputMap.size();
+        size_t memSize = model.GetMemory().size();
         //loops until memory is full of user input 5 digit exit code
         for (size_t i = 0; i < (100 - memSize); i++) {
             if (!done)
@@ -57,7 +59,7 @@ public:
                     }
                     else // user input an invalid 5 digit exit code
                     {
-                        view.DisplayError();
+                        view.DisplayInvalid();
                         i--;
                     }
                 }
@@ -65,14 +67,17 @@ public:
                     // Check user input for errors
                 else if ((uInput[0] != '+') || (uInput.length() != 5) || (uInput[0] != '-'))
                 {
-                    view.DisplayError();
+                    view.DisplayInvalid();
                     i--;
                 }
 
 
 
                     // Send user input to MODEL to store in memory
-                else model.updateMemory(uInput, memSize + i);
+                else {
+                    model.updateMemory(uInput, memSize + i);
+                    view.DispLine(uInput);
+                }
             }
                 // Format rest of empty cells
             else
@@ -105,8 +110,6 @@ public:
         int page = stoi(in);
         switch (page)
         {
-            case 0: loadMenu();
-                break;
             case 1: navigateReadMe(README_1);
                 break;
             case 2: model.updateMenu(EDIT);
@@ -121,36 +124,58 @@ public:
                 break;
             case 5: executeMode();
                 break;
-            case 6: exit(EXIT_SUCCESS);
-            case 7: model.updateMenu(DUMP);
+            case 6: return; //exit(EXIT_SUCCESS) is handled in main as return 0
+            default: view.DisplayInvalid(); //It just displays a message, no new page.
                 break;
-            default: view.DisplayInvalid();
-                // user can enter "1" to return to main menu
-                string line;
-                cin >> line;
-                if (line == "1") loadMenu();
-
         }
     }
 
     /// Navigates the Read Me files
     void navigateReadMe(int page)
     {
+        bool navigated = false;
         model.updateMenu(page);
         string in;
-        cin >> in;
-        int input = stoi(in);
-        if (input == 0) loadMenu();
-        else if (input >= 1 && input <= 5) navigateReadMe(input);
-        else
-        {
-            view.DisplayInvalid();
-            navigateReadMe(page);
+
+        while(!navigated){ //Loop input again if invalid selection
+            cin >> in;
+            int input = stoi(in);
+            if (input == 1) { //Return to main menu
+                loadMenu();
+                navigated = true;
+            }
+
+            //First page, no prev option
+            else if (page == 1 && input == 2){
+                navigateReadMe(page+1);
+                navigated= true;
+            }
+            //Middle pages, has next and previous options
+            else if (page > 1 && page < 5) {
+                switch (input) {
+                    case 2:
+                        navigateReadMe(page + 1); //Next Page
+                        navigated = true;
+                        break;
+                    case 3:
+                        navigateReadMe(page - 1); //Previous Page
+                        navigated = true;
+                        break;
+                    default:
+                        view.DisplayInvalid();
+                }
+            } else if (page == 5 && input == 2) { //Last page, no next button
+                navigateReadMe(page - 1);
+                navigated = true;
+            }
+            if (!navigated) {
+                view.DisplayInvalid();
+            }
         }
     }
 
     /// Saves the current programs memory to .txt file
-    bool save()
+    void save()
     {
         model.updateMenu(SAVE);
         cout << "\nSave file as: ";
@@ -159,21 +184,20 @@ public:
         ofstream file (saveFile);
         if (file.is_open())
         {
-            for(int i = 0; i < model.memory.inputMap.size(); i++)
+            for(int i = 0; i < model.GetMemory().size(); i++)
             {
-                file << model.memory.inputMap[i] << endl;
+                file << model.GetMemory()[i] << endl;
             }
             file.close();
             cout << "File saved successfully\n";
         }
         else cout << "Error creating save file!\n";
-
-
     }
 
     /// Loads a specified .txt file into memory
-    bool load()
+    void load()
     {
+        
         model.updateMenu(LOAD);
         cout << "\nLoad which file?: ";
         cin >> loadFile;
@@ -198,3 +222,4 @@ private:
     string loadFile;
 
 };
+#endif

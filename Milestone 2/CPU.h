@@ -1,17 +1,17 @@
+#ifndef CPU_H
+#define CPU_H
 #include <map> //Memory
 #include <string>
 #include <algorithm> //If needed
 #include <iostream>
-
-using namespace std;
-
-#ifndef MILESTONE_1_CPU_H
-#define MILESTONE_1_CPU_H
+#include <utility>
 
 //SUBCLASS CPU
-///not much to change at the moment.
 class CPU {
+private: VIEW& view;
+public:
     //variables
+    map<size_t ,string> memory; //The memory
     int accumulator; //The singular register
     int IC; //For dump
     string IR; //For dump
@@ -20,11 +20,11 @@ class CPU {
     string userNum; //String for user I/O prompts
     bool halt;
 
-public:
+    CPU (VIEW& v) :view(v){accumulator = 0; IC = 0; IR = ""; opcode = 0; operand = 0; userNum = ""; halt = true;}
 
     //this function needs to reference the map class.
-    void runCPU(map<size_t ,string> &memory){
-
+    void runCPU(map<size_t ,string> m){
+        memory = move(m);
         accumulator = 0;
         halt = false;
 
@@ -44,7 +44,10 @@ public:
             else if (line[0] == '-') sign = false;
             else
             {
-                cout << "Invalid sign at line: " << i << endl;
+                halt = true;
+                //1 which type of error  1 is this error
+                //1, line, 0
+                view.DisplayError(1,i,0);
                 break;
             }
 
@@ -68,7 +71,7 @@ public:
                 case 10:
                     //Read();
                     //1007 = grab first input from the user and put it into desired memory location
-                    cout << "Enter an integer: ";
+                    view.DisplayRead();
                     cin >> userNum;
 
                     //Add sign to input if user did not
@@ -81,7 +84,7 @@ public:
                 case 11:
                     //Write();
                     //write command; take memory location 09 and give it to the screen to print.
-                    cout << "Contents of " << operand << " is " << StrToInt(memory[operand]) << endl;
+                    view.DisplayWrite(operand, StrToInt(memory[operand]));
                     break;
 
                 case 20:
@@ -159,17 +162,20 @@ public:
                     //INVALID OPCODE
                 default:
                     //stop execution and then tell view to display error.
-                    cout << "ERROR: Invalid operation '" << opcode << "' at line " << i << ".\n"<<
-                         "Please review valid instructions in readme.txt\nEnding program..." << endl;
-                    IC = i;
                     halt = true;
+                    IC = i;
+                    //2 is going to be this error.
+                    //2, line, opcode
+                    view.DisplayError(2,i,opcode);
+
                     break;
             }
             if (!halt)
                 IC = i;
         }
-        //Print end of execution message
-        cout << "\n---------HALT Reached, Execution Finsished---------\n" << endl;
+        view.DisplayEnd();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.get();
 
         //Format Accumulator to string
         string accString = to_string(accumulator);
@@ -178,26 +184,21 @@ public:
         if (accString.size() < 4) //Insert leading 0s
             for (std::size_t i = accString.size(); i < 5; ++i)
                 accString.insert(1, "0");
-
-        //Print register dump
-        cout << "REGISTERS" <<
-                "\nAccumulator: " << accString <<
-                "\nInstruction Counter: "; cout.fill('0'); cout.width(2); cout << IC <<
-                "\nInstruction Register: ";; cout.fill('0'); cout.width(2); cout << IR <<
-                "\nOpcode: " << opcode <<
-                "\nOperand: "; cout.fill('0'); cout.width(2); cout << operand << endl << endl;
     }
 
     void overflowCheck(){
         //Overflow
+        //error code 3
+        //DisplayError(3,0,0)
         if (accumulator > 9999){
-            cout << "Accumulator overflow error!" << endl;
+            view.DisplayError(3,0,0);
             accumulator = -9999 + (accumulator - 9999);
         }
 
         //Underflow
+        //DisplayError(4,0,0)
         else if (accumulator < -9999){ //Underflow
-            cout << "Accumulator underflow error!" << endl;
+            view.DisplayError(4,0,0);
             accumulator = 9999 - (accumulator + 9999);
         }
 
@@ -214,6 +215,6 @@ public:
             return(y * -1);
         return y;
     };
-};
 
-#endif //MILESTONE_1_CPU_H
+};
+#endif
