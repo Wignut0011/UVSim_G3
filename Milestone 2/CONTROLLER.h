@@ -77,7 +77,7 @@ public:
                 // Format rest of empty cells
             else
                 // Tell MODEL the remaining cells are empty
-                model.updateMemory("+0000", i);
+                model.updateMemory("+0000", memSize + i);
         }
         return done;
     }
