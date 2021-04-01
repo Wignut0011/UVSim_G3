@@ -10,7 +10,7 @@
 
 //Global constants
 enum resolution :size_t{WIDTH = 120, HEIGHT = 30, PRINT_LINE = 4}; //Resolution line consts
-enum errorTypes :size_t{SIGN = 1, INV_OPCODE = 2, OVERFLOW = 3, UNDERFLOW = 4};//Error types thrown by CPU
+enum errorTypes :size_t{SIGN = 1, INV_OPCODE = 2, OVER_FLOW = 3, UNDER_FLOW = 4};//Error types thrown by CPU
 enum mainPages :size_t{MAIN = 0, README_1 = 1, README_2 = 2, README_3 = 3, README_4 = 4, README_5 = 5,
     EDIT = 6, EXEC = 7, SAVE = 8, LOAD = 9, DUMP = 10};
 const char LINE_TOKEN[] = "%l", PAGE_TOKEN[] = "%p", ADDR_TOKEN[] = "%a", VAL_TOKEN[] = "%v",
@@ -41,21 +41,25 @@ currPageNum = p; //At page 'p'
     }
 
     //Display status of load or save. true = load, false = save
-    void LoadSave(bool menu, bool status){
+    void MainError(size_t menu, bool status){
         //Load up main menu
         currPageNum = MAIN;
         currPage.str(menus.getMenu(MAIN));
 
         //Switch case for menu
-        if (menu){ //Load
+        if (menu == 1){ //Load
             currPage.str(regex_replace(currPage.str(), regex(string(string(STATUS_TOKEN) + "( ){" +
                                            string(to_string((status)? (LOAD_SUCCESS.length()-2):(LOAD_FAIL.length()-2)) + "}"))),
                                        (status)? LOAD_SUCCESS : LOAD_FAIL));
         }
-        else{ //Save
+        else if(menu == 2){ //Save
             currPage.str(regex_replace(currPage.str(), regex(string(string(STATUS_TOKEN) + "( ){" +
                                         string(to_string((status)? (SAVE_SUCCESS.length()-2):(SAVE_FAIL.length()-2)) + "}"))),
                                        (status)? SAVE_SUCCESS : SAVE_FAIL));
+        }
+        else{ //Execution mode rejected
+            currPage.str(regex_replace(currPage.str(), regex(string(string(STATUS_TOKEN) + "( ){" +
+                                        string(EXECUTION_REJECTION) + "}")), EXECUTION_REJECTION));
         }
 
         //Check if loaded page is right resolution of 120x30 chars
@@ -163,11 +167,11 @@ currPageNum = p; //At page 'p'
                 currPage.str(regex_replace(currPage.str(), regex(VAL_TOKEN), to_string(opcode)));
                 currPage.str(regex_replace(currPage.str(), regex(ADDR_TOKEN), to_string(line)+((line<10)?" ":"")));
                 break;
-            case OVERFLOW:
+            case OVER_FLOW:
                 currPage.str(regex_replace(currPage.str(), regex(string(LINE_TOKEN)+
                                             "( ){"+to_string(OVER_WARNING.size()-2)+"}"), OVER_WARNING));
                 break;
-            case UNDERFLOW:
+            case UNDER_FLOW:
                 currPage.str(regex_replace(currPage.str(), regex(string(LINE_TOKEN)+
                                             "( ){"+to_string(UNDER_WARNING.size()-2)+"}"), UNDER_WARNING));
                 break;
@@ -288,6 +292,7 @@ private:
     const string LOAD_FAIL = "Memory Could Not Load";
     const string SAVE_SUCCESS = "Memory Successfully Saved!";
     const string SAVE_FAIL = "Memory Could Not Save";
+    const string EXECUTION_REJECTION = "No memory has been staged yet";
     const string SIGN_ERROR = "Error: Invalid word sign detected at line %a... Ending Execution";
     const string INV_ERROR = "Error: Invalid opcode %v read at address %a... Ending Execution";
     const string OVER_WARNING = "Warning: Overflow detected";

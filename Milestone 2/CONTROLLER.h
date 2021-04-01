@@ -90,13 +90,18 @@ public:
     /// Starts execution mode
     void executeMode()
     {
-        model.updateMenu(EXEC);
-        model.runCPU();
+        if (!model.hasMemory()) {//Can't execute with no memory dummy
+            view.MainError(3, false);
+        }
+        else{
+            model.updateMenu(EXEC);
+            model.runCPU();
 
-        // After execution, user can enter "1" to return to main menu
-        string in;
-        cin >> in;
-        if (in == "1") loadMenu();
+            // After execution, user can enter "1" to return to main menu
+            string in;
+            cin >> in;
+            if (in == "1") loadMenu();
+        }
     }
 
 
@@ -197,7 +202,7 @@ public:
     /// Loads a specified .txt file into memory
     void load()
     {
-        
+
         model.updateMenu(LOAD);
         cout << "\nLoad which file?: ";
         cin >> loadFile;
