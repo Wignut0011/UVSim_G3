@@ -5,13 +5,15 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
-using namespace std;
-enum :size_t {files = 10};
+#include "VIEW.h"
 
-class MenuStrings {
+using namespace std;
+enum :size_t {FILES = 10};
+
+class MenuStrings{
     //width 120, height 30.
     vector<string> pages;
-    string pageNames[10] = {"MainMenu.txt","Readme1.txt","Readme2.txt","Readme3.txt","Readme4.txt","Readme5.txt","EditMode.txt","ExecuteMode.txt","Save.txt","Load.txt"};
+    string pageNames[FILES] = {"MainMenu.txt","Readme1.txt","Readme2.txt","Readme3.txt","Readme4.txt","Readme5.txt","EditMode.txt","ExecuteMode.txt","Save.txt","Load.txt"};
 public:
     MenuStrings(){
         setupMenus();
@@ -22,7 +24,7 @@ public:
 private:
     void setupMenus(){
         ifstream file;
-        for (int i = 0; i < files; i++){
+        for (int i = 0; i < FILES; i++){
             string line;
             stringstream text;
             file.open("Pages/" + string(pageNames[i]), ios::in);

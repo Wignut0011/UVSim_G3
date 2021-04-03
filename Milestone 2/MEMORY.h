@@ -9,8 +9,8 @@ public:
         inputMap[memLocation] = uInput;
     };
 
-    map<size_t, string> getMap(){
-        return inputMap;
+    map<size_t, string>& getMap(){
+        return (map<size_t, string>&)inputMap;
     }
 
 };

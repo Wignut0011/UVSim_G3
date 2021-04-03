@@ -21,9 +21,9 @@
 |     %l                                                                                                              |
 |     %l                                                                                                              |
 |                                                                                                                     |
-|                                                                                                                     |
 |     Are you sure you would like to load this program?                                                               |
 |     1: Yes                                                                                                          |
-|     2: no (return to main menu)                                                                                     |
+|     2: No (return to main menu)                                                                                     |
+|     3: No, And Empty Current Memory                                                                                 |
 |                                                                                                                     |
 =======================================================================================================================

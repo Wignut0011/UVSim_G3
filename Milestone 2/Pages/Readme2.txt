@@ -1,7 +1,7 @@
 =======================================================================================================================
 |     _   ___   __  ___ ___ __  __                                                                                    |
 |    | | | \ \ / / / __|_ _|  \/  |                =========                                                          |
-|    | |_| |\ V /  \__ \| || |\/| |                Operation                                                          |
+|    | |_| |\ V /  \__ \| || |\/| |                LOAD/SAVE                                                          |
 |     \___/  \_/   |___|___|_|  |_|                =========                                                          |
 |                                                                                                                     |
 |                                                                                                                     |
@@ -9,13 +9,13 @@
 |                                                                                                                     |
 |                                                                                                                     |
 |                                                                                                                     |
-|              UVSim runs in 2 modes; Editing Mode and Execution Mode. When the simulator                             |
-|              launches, you will be in Editing Mode. Here you will input your instructions (code)                    |
-|              as signed 4 digit decimal numbers one line at a time. Please see section Editing                       |
-|              Mode for further detail. When you are finished inputing your instructions, input                       |
-|              -99999. This ends Editing Mode and starts Execution Mode. In Execution Mode, the                       |
-|              simulator will run the instructions you had previously input in Editing Mode then                      |
-|              display a memory dump after it's finished.                                                             |
+|               UVSIM only supports one save file called Save.mem. In order to save your work from                    |
+|               Editing Mode, go to the save menu and select save. You can only do this if you have a                 |
+|               memory module already stagged. In order to load a memory module, go to the load menu and              |
+|               select load. If you have not previously saved any work, or deleted the save, you cannot               |
+|               access the load menu until you have a saved memory module. If you wish to redo an already             |
+|               stagged memory module, go to the load menu and select the third option. Doing this will               |
+|               erase your stagged memory and you can start again in Editing Mode.                                    |
 |                                                                                                                     |
 |                                                                                                                     |
 |                                                                                                                     |

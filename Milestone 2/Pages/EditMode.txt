@@ -6,10 +6,9 @@
 |                                                                                                                     |
 |     Input instructions for your program. They will appear below.                                                    |
 |     Page %p                                                                                                         |
-|     %l                                                                                                              |
-|     %l                                                                                                              |
-|     %l                                                                                                              |
-|     %l                                                                                                              |
+|                                                                                                                     |
+|                                                                                                                     |
+|                                                                                                                     |
 |     %l                                                                                                              |
 |     %l                                                                                                              |
 |     %l                                                                                                              |
@@ -21,9 +20,10 @@
 |     %l                                                                                                              |
 |     %l                                                                                                              |
 |                                                                                                                     |
+|                                                                                                                     |
+|                                                                                                                     |
 |     Valid Commands:                                                                                                 |
-|     1: Complete editing and return to main menu.                                                                    |
-|     2: Next Page                                                                                                    |
-|     3: Prev Page                                                                                                    |
+|     -99999: Exit without saving                                                                                     |
+|     +99999: Exit and save                                                                                           |
 |                                                                                                                     |
 =======================================================================================================================

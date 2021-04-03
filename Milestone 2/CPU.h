@@ -2,9 +2,12 @@
 #define CPU_H
 #include <map> //Memory
 #include <string>
-#include <algorithm> //If needed
-#include <iostream>
+//#include <algorithm> //If needed
+//#include <iostream>
 #include <utility>
+#include "VIEW.h"
+
+enum registerIndex: size_t{ACCUMULATOR = 0, IC = 1, OPCODE = 2, OPERAND = 3};
 
 //SUBCLASS CPU
 class CPU {
@@ -12,26 +15,33 @@ private: VIEW& view;
 public:
     //variables
     map<size_t ,string> memory; //The memory
-    int accumulator; //The singular register
-    int IC; //For dump
+    int registers[5];
+//    int accumulator; //The singular register
+//    int IC; //For dump
     string IR; //For dump
-    size_t opcode; //Instruction code
-    int operand; //Instruction operation
+//    size_t opcode; //Instruction code
+//    int operand; //Instruction operation
     string userNum; //String for user I/O prompts
     bool halt;
 
-    CPU (VIEW& v) :view(v){accumulator = 0; IC = 0; IR = ""; opcode = 0; operand = 0; userNum = ""; halt = true;}
+    CPU (VIEW& v) :view(v){registers[ACCUMULATOR] = 0; registers[IC] = 0; IR = ""; registers[OPCODE] = 0; registers[OPERAND] = 0; userNum = ""; halt = true;}
 
     //this function needs to reference the map class.
     void runCPU(map<size_t ,string> m){
         memory = move(m);
-        accumulator = 0;
+        registers[ACCUMULATOR] = 0;
         halt = false;
+
+        if (memory.size()<100) //Make sure the memory is filled up
+            for (size_t i = 0; i < 100; ++i) {
+                if (memory[i] == "")
+                    memory[i] = "+0000";
+            }
 
         //For loop to imitate a cpu clock, ends when end of memory is reached or halt was set
         for (int i = 0; !halt && i < 100; i++) {
-            opcode = 0;
-            operand = 0;
+            registers[OPCODE] = 0;
+            registers[OPERAND] = 0;
 
             string line = memory.at(i);
             IR = line;
@@ -58,104 +68,123 @@ public:
                     line.insert(1, "0");
             }
             else {
-                opcode = abs(stoi(line.substr(1, 2))); //Extract opcode substring
+                registers[OPCODE] = abs(stoi(line.substr(1, 2))); //Extract opcode substring
                 //==========================================================
                 //   Gets the data code to be used in the switch
-                operand = stoi(line.substr(3)); //Extract operand substring
+                registers[OPERAND] = stoi(line.substr(3)); //Extract operand substring
                 // Put sign in operand
                 if (line[0] == '-')
-                    operand *= -1;
+                    registers[OPERAND] *= -1;
             }
             //switch case for each instruction
-            switch (opcode) {
+            switch (registers[OPCODE]) {
                 case 10:
                     //Read();
                     //1007 = grab first input from the user and put it into desired memory location
-                    view.DisplayRead();
-                    cin >> userNum;
+                    view.DisplayRead("");
+
+                    userNum = "";
+                    //Make sure user inputs a number
+                    while (userNum.empty()) {
+                        cin >> userNum;
+                        for (auto j :userNum) {
+                            if (j != '-' && j != '+' && !isdigit(j)) {
+                                userNum = "";
+                                view.DisplayInvalid();
+                                break;
+                            }
+                        }
+                        if ((userNum.size()>6)){
+                            userNum = "";
+                            view.DisplayInvalid();
+                        }
+                    }
 
                     //Add sign to input if user did not
                     if (userNum[0] != '+' && userNum[0] != '-')
                         userNum.insert(0, "+");
 
-                    memory[operand] = userNum;
+                    //Display what the user had input
+                    view.DisplayRead(userNum);
+
+                    memory[registers[OPERAND]] = userNum;
                     break;
 
                 case 11:
                     //Write();
                     //write command; take memory location 09 and give it to the screen to print.
-                    view.DisplayWrite(operand, StrToInt(memory[operand]));
+                    view.DisplayWrite(registers[OPERAND], StrToInt(memory[registers[OPERAND]]));
                     break;
 
                 case 20:
                     //Load();    Load a word from a specific location in memory into the accumulator
                     //load command; integer from location 07 is loaded into accumulator
-                    accumulator = StrToInt(memory[operand]);
+                    registers[ACCUMULATOR] = StrToInt(memory[registers[OPERAND]]);
                     break;
 
                 case 21:
                     //Store();   Store a word from the accumulator into a specific location in memory
                     //store command; take the added number and store it in the memory location 09
-                    memory[operand] = to_string(accumulator);
+                    memory[registers[OPERAND]] = to_string(registers[ACCUMULATOR]);
 
                     //Add sign to word
-                    if (accumulator >= 0)
-                        memory[operand].insert(0, "+");
+                    if (registers[ACCUMULATOR] >= 0)
+                        memory[registers[OPERAND]].insert(0, "+");
 
                     break;
 
                 case 30:
                     //Add();
                     //Extract number with sign
-                    if (sign) accumulator += StrToInt(memory[operand]);
-                    else accumulator -= StrToInt(memory[operand]);
+                    if (sign) registers[ACCUMULATOR] += StrToInt(memory[registers[OPERAND]]);
+                    else registers[ACCUMULATOR] -= StrToInt(memory[registers[OPERAND]]);
                     overflowCheck();
                     break;
 
                 case 31:
                     //Subtract();
                     //Extract number with sign
-                    if (sign) accumulator -= StrToInt(memory[operand]);
-                    else accumulator += StrToInt(memory[operand]);
+                    if (sign) registers[ACCUMULATOR] -= StrToInt(memory[registers[OPERAND]]);
+                    else registers[ACCUMULATOR] += StrToInt(memory[registers[OPERAND]]);
                     overflowCheck();
                     break;
 
                 case 32:
                     //Divide();
-                    accumulator /= StrToInt(memory[operand]);
-                    if (!sign) accumulator *= -1;
+                    registers[ACCUMULATOR] /= StrToInt(memory[registers[OPERAND]]);
+                    if (!sign) registers[ACCUMULATOR] *= -1;
                     overflowCheck();
                     break;
 
                 case 33:
                     //Multiply();
-                    accumulator *= StrToInt(memory[operand]);
-                    if (!sign) accumulator *= -1;
+                    registers[ACCUMULATOR] *= StrToInt(memory[registers[OPERAND]]);
+                    if (!sign) registers[ACCUMULATOR] *= -1;
                     overflowCheck();
                     break;
 
                     //BRANCH
                 case 40:
                     //Branch to address in operand
-                    i = abs(operand) - 1;
+                    i = abs(registers[OPERAND]) - 1;
                     break;
 
                     //BRANCHNEG
                 case 41:
-                    if (accumulator < 0) //If accumulator is negative, branch to address
-                        i = abs(operand) - 1;
+                    if (registers[ACCUMULATOR] < 0) //If accumulator is negative, branch to address
+                        i = abs(registers[OPERAND]) - 1;
                     break;
 
                     //BRANCHZERO
                 case 42:
-                    //If accumulator is 0, branch to address
-                    if (!accumulator)
-                        i = abs(operand) - 1;
+                    //If registers[ACCUMULATOR] is 0, branch to address
+                    if (!registers[ACCUMULATOR])
+                        i = abs(registers[OPERAND]) - 1;
                     break;
 
                     //HALT
                 case 43:
-                    IC = i;
+                    registers[IC] = i;
                     halt = true;
                     break;
 
@@ -163,23 +192,23 @@ public:
                 default:
                     //stop execution and then tell view to display error.
                     halt = true;
-                    IC = i;
+                    registers[IC] = i;
                     //2 is going to be this error.
                     //2, line, opcode
-                    view.DisplayError(2,i,opcode);
+                    view.DisplayError(2,i,registers[OPCODE]);
 
                     break;
             }
             if (!halt)
-                IC = i;
+                registers[IC] = i;
         }
         view.DisplayEnd();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         cin.get();
 
         //Format Accumulator to string
-        string accString = to_string(accumulator);
-        if (accumulator > 0) //Insert positive sign
+        string accString = to_string(registers[ACCUMULATOR]);
+        if (registers[ACCUMULATOR] > 0) //Insert positive sign
             accString.insert(0, "+");
         if (accString.size() < 4) //Insert leading 0s
             for (std::size_t i = accString.size(); i < 5; ++i)
@@ -190,20 +219,20 @@ public:
         //Overflow
         //error code 3
         //DisplayError(3,0,0)
-        if (accumulator > 9999){
+        if (registers[ACCUMULATOR] > 9999){
             view.DisplayError(3,0,0);
-            accumulator = -9999 + (accumulator - 9999);
+            registers[ACCUMULATOR] = -9999 + (registers[ACCUMULATOR] - 9999);
         }
 
         //Underflow
         //DisplayError(4,0,0)
-        else if (accumulator < -9999){ //Underflow
+        else if (registers[ACCUMULATOR] < -9999){ //Underflow
             view.DisplayError(4,0,0);
-            accumulator = 9999 - (accumulator + 9999);
+            registers[ACCUMULATOR] = 9999 - (registers[ACCUMULATOR] + 9999);
         }
 
         //Multiple overflows check
-        if (accumulator > 9999 || accumulator < -9999)
+        if (registers[ACCUMULATOR] > 9999 || registers[ACCUMULATOR] < -9999)
             overflowCheck();
     }
 

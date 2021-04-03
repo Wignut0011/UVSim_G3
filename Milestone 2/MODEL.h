@@ -17,25 +17,25 @@ public:
 
     MODEL(VIEW& v) : view(v){}
 
-    //variables
-    string userNum;
-    int currentPage;
-
     //functions
     bool hasMemory(){
-        if(!memory.inputMap.empty()){
+        if(!memory.inputMap[0].empty()){
             return true;
         }
         return false;
     }
 
-    map<size_t, string> GetMemory(){return memory.getMap();}
+    MEMORY& GetMemory(){return (MEMORY &)memory;}
 
     ///TODO
     void runCPU(){
 //        CPU cpu(view);
         cpu.runCPU(memory.getMap());
-        MemDump::createDump(cpu);
+        MemDump::createDump(cpu);//Send results to dump
+
+//        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.get();
+//        view.Display(MAIN);
     }
 
     ///not totally sure what this is supposed to accomplish yet. I think I got it though.
@@ -47,7 +47,9 @@ public:
             view.Display(page);
     };
 
-    //void loadMemory(MEMORY);  ///this function is probably not needed.
+    void loadMemory(MEMORY mem){  ///Repurposed for CONTROLLER, Daniel
+        memory = move(mem);
+    }
 
     void updateMemory(string uInput, int memLocation){
         ///this is going to call on memory.h to make things add to memory
