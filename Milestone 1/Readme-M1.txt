@@ -16,11 +16,12 @@ l     | \   / l     |     \    | j  l |   |   |l     ||     ||  |  |  |  |  l   
 	|===================|
 	|      TABLE        |
 	|===================|
-	|1: OVERVIEW        |
-	|2: LOAD            |
-	|3: EDITING MODE    |
-	|4: EXECUTION MODE  |
-	|5: INSTRUCTIONS    |
+	|1: Functionality   |
+	|   -Overview       |
+	|   -Operation      |
+	|   -Edit Mode      |
+	|   -Execution Mode |
+	|   -Instructions   |
 	|___________________|
 
 --------------------------------------------------------------------------------------------------
@@ -35,36 +36,27 @@ ___|
 	
 	UVSim is a Command Line based Machine Language Simulator developed as an educational
 	tool for the purpose of learning Machine Language. UVSim contains 1 register nammed
-	"Accumulator", 15 instructions, and 100 lines of memory. UVSim first opens in a menu.
-	The ReadMe, Load Memory, Editing Mode, Execution Mode, and Exit. You can load memory
-	modules in the load menu and create then save memory files in Editing Mode and run 
-	loaded memory in Execution Mode. In order to start Execution Mode, you need to have a
-	staged memory module via loading it or creating it in Editing Mode.
+	"Accumulator", 15 instructions, and 100 lines of memory. UVSim runs in 2 modes.
+	Editing Mode and Execution Mode.
 	
---------------------------------------------------------------------------------------------------
-==================================================================================================
---------------------------------------------------------------------------------------------------
-	
- 2 |
-___|
-	
-	LOAD
-	====
-	
-	A list of saved .mem memory modules from the memory folder will be displayed in this
-	menu. If no files were saved here, it will be blank. In order to start Execution Mode,
-	you need to load a memory module from this menu or a recently create a module from Editing
-	Mode.
-	
---------------------------------------------------------------------------------------------------
-==================================================================================================
---------------------------------------------------------------------------------------------------
-	
- 3 |
-___|
 
+	OPERATION
+	=========
+	
+	
+	UVSim runs in 2 modes; Editing Mode and Execution Mode. When the simulator
+	launches, you will be in Editing Mode. Here you will input your instructions (code)
+	as signed 4 digit decimal numbers one line at a time. Please see section Editing
+	Mode for further detail. When you are finished inputing your instructions, input
+	-99999. This ends Editing Mode and starts Execution Mode. In Execution Mode, the 
+	simulator will run the instructions you had previously input in Editing Mode then 
+	display a memory dump after it's finished. 
+	
+	
+	
 	EDITING MODE
-	============
+	=============
+	
 	
 	  ________________
 	  |UVUSim.exe    |
@@ -89,8 +81,7 @@ ___|
 	purpose. Since the memory is limited to 100 lines, you will only be	able to input
 	instructions until line 99. When you want the program to finish at a particular line, be
 	sure to put a HALT instruction. To exit Editing Mode you can either fill all 99 lines
-	or input -9999. Doing this will prompt you to either save the memory module as a file or
-	not. Either way, this memory will be staged to run in Execution Mode.
+	or input -9999. Doing this will put UVSim into Execution Mode.
 		
 	Hint: You may want to reserve a block of lines for data, if so, you can use it as pure
 	data, or you may want to leave it empty incase you want to save data during execution.
@@ -100,33 +91,18 @@ ___|
 	results	in a higher/lower digit number. IE: Once it reaches the limit of +9999, it will
 	wrap back to the other limit of -9999 and continue, resulting in a false answer.
 
---------------------------------------------------------------------------------------------------
-==================================================================================================
---------------------------------------------------------------------------------------------------
 
- 4 |
-___|
 
 	EXECUTION MODE
 	==============
 	
 	
-	In order to start this mode, you need to have a staged memory module. If no memory module
-	has been staged, you can't run this mode yet. To have a module staged, you either have to
-	create one in Editing Mode or load one.
-	
-	Once in Execution Mode, the simulator will start to execute the instructions in the staged
-	memory module. Depending on your instructions, you may be prompted to input a number during
+	In Execution Mode, the simulator will start to execute the instructions you had put into
+	it's memory. Depending on your instructions, you may be prompted to input a number during
 	it's runtime. Once a HALT instruction has been reached, or line 99 had been executed, 
 	Execution Mode will end and a dump of the memory and each register will be printed on the
-	screen. Once you are done reviewing the dump, you will be put back into the main menu.
+	screen. To use the simulator again, you will need to re-launch UVSim.
 	
---------------------------------------------------------------------------------------------------
-==================================================================================================
---------------------------------------------------------------------------------------------------
-
- 5 |
-___|
 	
 	LIST OF INSTRUCTIONS
 	====================
