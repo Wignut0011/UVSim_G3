@@ -7,7 +7,7 @@
 #include <utility>
 #include "VIEW.h"
 
-enum registerIndex: size_t{ACCUMULATOR = 0, IC = 1, OPCODE = 2, OPERAND = 3};
+enum registerIndex: size_t{ACCUMULATOR = 0, IC = 1, OPCODE = 2, OPERAND = 3, LONG_ACC1 = 98, LONG_ACC2 = 99};
 
 //SUBCLASS CPU
 class CPU {
@@ -113,32 +113,94 @@ public:
                 case 11:
                     //Write();
                     //write command; take memory location 09 and give it to the screen to print.
+                    /// check for double words
                     view.DisplayWrite(registers[OPERAND], StrToInt(memory[registers[OPERAND]]));
                     break;
 
                 case 20:
                     //Load();    Load a word from a specific location in memory into the accumulator
                     //load command; integer from location 07 is loaded into accumulator
+                    /// check for double words
+
                     registers[ACCUMULATOR] = StrToInt(memory[registers[OPERAND]]);
+                    if (to_string(registers[ACCUMULATOR]).length() == 3)
+                    {
+                        //registers[ACCUMULATOR] += StrToInt(memory[registers[OPERAND] + 1]);
+
+                        string s = to_string(registers[ACCUMULATOR]) + to_string(StrToInt(memory[registers[OPERAND]+1]));
+                        //registers[ACCUMULATOR] = StrToInt(s);
+                        memory[LONG_ACC1] = memory[registers[OPERAND]];
+                        memory[LONG_ACC2] = memory[registers[OPERAND] + 1];
+                    }
                     break;
 
                 case 21:
                     //Store();   Store a word from the accumulator into a specific location in memory
                     //store command; take the added number and store it in the memory location 09
-                    memory[registers[OPERAND]] = to_string(registers[ACCUMULATOR]);
+                    /// If accumulator is holding a 3 digit word, this indicates the accumulator is holding the first half of a double world. All other words should be 4 digits.
+                    /// If it is, store 98 in the specified location and 99 in the proceeding location
 
-                    //Add sign to word
-                    if (registers[ACCUMULATOR] >= 0)
-                        memory[registers[OPERAND]].insert(0, "+");
+                    if (to_string(registers[ACCUMULATOR]).length() == 3)
+                    {
+                        memory[registers[OPERAND]] = memory[LONG_ACC1];
+                        memory[registers[OPERAND]+1] = memory[LONG_ACC2];
+                        memory[LONG_ACC1] = "";
+                        memory[LONG_ACC2] = "";
+                    }
+
+                    else
+                    {
+                        memory[registers[OPERAND]] = to_string(registers[ACCUMULATOR]);
+                        //Add sign to word
+                        if (registers[ACCUMULATOR] >= 0) memory[registers[OPERAND]].insert(0, "+");
+                    }
 
                     break;
+
+
+                    /// After the accumulator splits a word up, it automatically stores it in slots 98 and 99. Accumulator should hold the leading word afterwards (98)
+                    /// 98 and 99 are exclusively used for accumulator memory. 94-97 are used to store double words currently being used in an operation
+                    /// Completed: if addition results in a word longer than 4 digits but less than 7, accumulator splits word up
+                    /// TODO: store accumulator loaded with double word into memory, add two double words, add negative case
+                    /// TODO: if 99 gets increased to 4 digits, instead 98 gets +1 and 99 gets -1000
+                    /// TODO: subtraction, multiplication, division, store, write
+                    /// TODO: clear long accumulator memory after store
+                    /// TODO: before operations start, check for double words. Accumulator can't hold more than 4 digits between operations (after load specifically)
+
 
                 case 30:
                     //Add();
                     //Extract number with sign
-                    if (sign) registers[ACCUMULATOR] += StrToInt(memory[registers[OPERAND]]);
+                    if (sign)
+                    {
+                        registers[ACCUMULATOR] += StrToInt(memory[registers[OPERAND]]);
+                        if ((registers[ACCUMULATOR]) > 9999 && registers[ACCUMULATOR] < 999999)
+                        {
+                            int digitTracker = 0;
+                            string temp = to_string(registers[ACCUMULATOR]);
+                            stringstream s1;
+                            s1 << "++" << temp[digitTracker++] << temp[digitTracker++] << temp[digitTracker++];
+                            memory[LONG_ACC1] = s1.str();
+                            stringstream s2;
+                            s2 << "++";
+                            while (digitTracker <= temp.length())
+                            {
+                                s2 << temp[digitTracker++];
+                                //digitTracker++;
+                            }
+                            memory[LONG_ACC2] = s2.str();
+                            if (memory[LONG_ACC2].length() > 5) // 99 overflows to 4 digits
+                            {
+                                int x = StrToInt(memory[LONG_ACC2]) - 1000;
+                                memory[LONG_ACC2] = to_string(x);
+                                int y = StrToInt(memory[LONG_ACC1]) + 1;
+                                memory[LONG_ACC2] = to_string(y);
+                            }
+                            registers[ACCUMULATOR] = StrToInt(memory[LONG_ACC1]);
+                        }
+                    }
                     else registers[ACCUMULATOR] -= StrToInt(memory[registers[OPERAND]]);
-                    overflowCheck();
+                    //overflowCheck();
                     break;
 
                 case 31:
@@ -215,6 +277,11 @@ public:
                 accString.insert(1, "0");
     }
 
+    string wordSplitter(int acc)
+    {
+
+    }
+
     void overflowCheck(){
         //Overflow
         //error code 3
@@ -239,10 +306,16 @@ public:
     // Returns signed int from string
     //*stoi() doesn't like strings that have '+' or '-'
     int StrToInt(string word){
-        int y = stoi(word.substr(1));
-        if (word[0] == '-') //Grab number sign
-            return(y * -1);
-        return y;
+        bool neg = false;
+        stringstream ss;
+        if (word[0] == '-') neg = true;
+        for (int i = 0; i < word.length(); i++)
+        {
+            if (word[i] != '+' && word[i] != '-') ss << word[i];
+        }
+        int value = stoi(ss.str());
+        if (neg) return (value * -1);
+        else return value;
     };
 
 };
