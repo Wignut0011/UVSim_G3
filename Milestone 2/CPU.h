@@ -31,6 +31,7 @@ public:
         memory = move(m);
         registers[ACCUMULATOR] = 0;
         halt = false;
+        bool doubleWord = false;
 
         if (memory.size()<100) //Make sure the memory is filled up
             for (size_t i = 0; i < 100; ++i) {
@@ -122,15 +123,17 @@ public:
                     //load command; integer from location 07 is loaded into accumulator
                     /// check for double words
 
-                    registers[ACCUMULATOR] = StrToInt(memory[registers[OPERAND]]);
-                    if (to_string(registers[ACCUMULATOR]).length() == 3)
+                    if (memory[registers[OPERAND]][1] == '+' || memory[registers[OPERAND]][1] == '-')// double word found in memory
                     {
-                        //registers[ACCUMULATOR] += StrToInt(memory[registers[OPERAND] + 1]);
-
-                        string s = to_string(registers[ACCUMULATOR]) + to_string(StrToInt(memory[registers[OPERAND]+1]));
-                        //registers[ACCUMULATOR] = StrToInt(s);
+                        doubleWord = true;
                         memory[LONG_ACC1] = memory[registers[OPERAND]];
                         memory[LONG_ACC2] = memory[registers[OPERAND] + 1];
+                    }
+                    else
+                    {
+                        doubleWord = false;
+                        registers[ACCUMULATOR] = StrToInt(memory[registers[OPERAND]]);
+                        //if (memory[registers[OPERAND]][0] == '-') registers[ACCUMULATOR] *= -1;
                     }
                     break;
 
@@ -140,66 +143,127 @@ public:
                     /// If accumulator is holding a 3 digit word, this indicates the accumulator is holding the first half of a double world. All other words should be 4 digits.
                     /// If it is, store 98 in the specified location and 99 in the proceeding location
 
-                    if (to_string(registers[ACCUMULATOR]).length() == 3)
+                    //if (to_string(registers[ACCUMULATOR]).length() == 3)
+                    if (doubleWord)
                     {
                         memory[registers[OPERAND]] = memory[LONG_ACC1];
                         memory[registers[OPERAND]+1] = memory[LONG_ACC2];
-                        memory[LONG_ACC1] = "";
-                        memory[LONG_ACC2] = "";
                     }
-
                     else
                     {
                         memory[registers[OPERAND]] = to_string(registers[ACCUMULATOR]);
                         //Add sign to word
                         if (registers[ACCUMULATOR] >= 0) memory[registers[OPERAND]].insert(0, "+");
+                        //else memory[registers[OPERAND]].insert(0, "-");
                     }
 
                     break;
 
 
                     /// After the accumulator splits a word up, it automatically stores it in slots 98 and 99. Accumulator should hold the leading word afterwards (98)
-                    /// 98 and 99 are exclusively used for accumulator memory. 94-97 are used to store double words currently being used in an operation
+                    /// 98 and 99 are exclusively used for accumulator memory.
                     /// Completed: if addition results in a word longer than 4 digits but less than 7, accumulator splits word up
-                    /// TODO: store accumulator loaded with double word into memory, add two double words, add negative case
-                    /// TODO: if 99 gets increased to 4 digits, instead 98 gets +1 and 99 gets -1000
+                    /// TODO: add negative case to add function
                     /// TODO: subtraction, multiplication, division, store, write
-                    /// TODO: clear long accumulator memory after store
-                    /// TODO: before operations start, check for double words. Accumulator can't hold more than 4 digits between operations (after load specifically)
+                    /// TODO: check double words for sign
+                    /// TODO: error handling for 7 digit words
+                    /// before operations start, check for double words. need to check if accumulator is holding a double word and if the memory slot has a double word
+
 
 
                 case 30:
                     //Add();
                     //Extract number with sign
-                    if (sign)
-                    {
-                        registers[ACCUMULATOR] += StrToInt(memory[registers[OPERAND]]);
-                        if ((registers[ACCUMULATOR]) > 9999 && registers[ACCUMULATOR] < 999999)
+
+                        /// Initialize accumulator
+                    if (registers[ACCUMULATOR] >= 0) sign = true;
+                    else if (registers[ACCUMULATOR] < 0) sign = false;
+                    else view.DisplayError(1,0,0);
+
+                        if (doubleWord) // double word found in accumulator
                         {
+                            if (memory[LONG_ACC1][0] == '+') sign = true;
+                            else if (memory[LONG_ACC1][0] == '-') sign = false;
+                            else view.DisplayError(1,0,0);
+                            registers[ACCUMULATOR] = StrToInt(memory[LONG_ACC1] + memory[LONG_ACC2]); // accumulator is properly initialized with 2 word number
+                            if (!sign) registers[ACCUMULATOR] *= -1;
+                            cout << "Double word found in accumulator: " << registers[ACCUMULATOR] << endl;
+                        }
+
+                        /// Add double word from memory to accumulator
+                        if (memory[registers[OPERAND]][1] == '+' || memory[registers[OPERAND]][1] == '-')// double word found in memory
+                        {
+                            if (sign) registers[ACCUMULATOR] += StrToInt((memory[registers[OPERAND]]) + memory[registers[OPERAND] + 1]); // accumulator adds full 2 word number
+                            else registers[ACCUMULATOR] -= StrToInt((memory[registers[OPERAND]]) + memory[registers[OPERAND] + 1]);
+                            cout << "Double word found in memory: " << memory[registers[OPERAND]] << " + " << (memory[registers[OPERAND] + 1]) << " at mem = " << registers[OPERAND] << endl;
+
+                        }
+                        else
+                        {
+
+                            //if (!sign) cout << memory[registers[OPERAND]] << endl;
+                            //cout << registers[ACCUMULATOR] << endl;
+
+                            if (sign) registers[ACCUMULATOR] += StrToInt(memory[registers[OPERAND]]);
+                            else registers[ACCUMULATOR] += StrToInt(memory[registers[OPERAND]]);
+
+                            //registers[ACCUMULATOR] += StrToInt(memory[registers[OPERAND]]);
+                            //cout << registers[ACCUMULATOR] << endl;
+                        }
+
+                        /// 6 digit check (splits words up)
+                        if (((registers[ACCUMULATOR]) > 9999 && registers[ACCUMULATOR] < 999999) || (registers[ACCUMULATOR] < -9999 && registers[ACCUMULATOR] > -999999))
+                        {
+                            if (registers[ACCUMULATOR] < 0) sign = false;
                             int digitTracker = 0;
                             string temp = to_string(registers[ACCUMULATOR]);
                             stringstream s1;
-                            s1 << "++" << temp[digitTracker++] << temp[digitTracker++] << temp[digitTracker++];
+                            if (sign) s1 << "++";
+                            else s1 << "-";
+                            s1 << temp[digitTracker++] << temp[digitTracker++] << temp[digitTracker++];
                             memory[LONG_ACC1] = s1.str();
                             stringstream s2;
-                            s2 << "++";
+                            if (sign) s2 << "++";
+                            else s2 << "-";
                             while (digitTracker <= temp.length())
                             {
                                 s2 << temp[digitTracker++];
                                 //digitTracker++;
                             }
                             memory[LONG_ACC2] = s2.str();
-                            if (memory[LONG_ACC2].length() > 5) // 99 overflows to 4 digits
+
+
+                            cout << "99: " << memory[LONG_ACC1] << endl;
+                            cout << "98: " << memory[LONG_ACC2] << endl;
+                            cout << StrToInt(memory[LONG_ACC1]) << " / " << StrToInt(memory[LONG_ACC2]) << " / " << registers[ACCUMULATOR] << endl;
+
+                            if (abs(StrToInt(memory[LONG_ACC2])) > 999) // 99 overflows to 4 digits
                             {
                                 int x = StrToInt(memory[LONG_ACC2]) - 1000;
                                 memory[LONG_ACC2] = to_string(x);
                                 int y = StrToInt(memory[LONG_ACC1]) + 1;
-                                memory[LONG_ACC2] = to_string(y);
+                                memory[LONG_ACC1] = to_string(y);
                             }
-                            registers[ACCUMULATOR] = StrToInt(memory[LONG_ACC1]);
+                            /// Underflow check needs work
+                            /*
+                            if (StrToInt(memory[LONG_ACC2]) < 0)
+                            {
+                                int x = StrToInt(memory[LONG_ACC2]) + 1000;
+                                memory[LONG_ACC2] = to_string(x);
+                                int y = StrToInt(memory[LONG_ACC1]) - 1;
+                                memory[LONG_ACC1] = to_string(y);
+                            }
+                            */
+
+                            //cout << registers[ACCUMULATOR] << endl;
+                            registers[ACCUMULATOR] = StrToInt(memory[LONG_ACC1]);// + memory[LONG_ACC2]);
+                            cout << "99: " << memory[LONG_ACC1] << endl;
+                            cout << "98: " << memory[LONG_ACC2] << endl;
+                            cout << StrToInt(memory[LONG_ACC1]) << " / " << StrToInt(memory[LONG_ACC2]) << " / " << registers[ACCUMULATOR] << endl;
+                            doubleWord = true;
                         }
-                    }
-                    else registers[ACCUMULATOR] -= StrToInt(memory[registers[OPERAND]]);
+
+                    //else registers[ACCUMULATOR] -= StrToInt(memory[registers[OPERAND]]);
                     //overflowCheck();
                     break;
 
@@ -246,6 +310,9 @@ public:
 
                     //HALT
                 case 43:
+                    cout << "99: " << memory[LONG_ACC1] << endl;
+                    cout << "98: " << memory[LONG_ACC2] << endl;
+                    cout << StrToInt(memory[LONG_ACC1]) << " / " << StrToInt(memory[LONG_ACC2]) << " / " << registers[ACCUMULATOR] << endl;
                     registers[IC] = i;
                     halt = true;
                     break;
@@ -275,11 +342,6 @@ public:
         if (accString.size() < 4) //Insert leading 0s
             for (std::size_t i = accString.size(); i < 5; ++i)
                 accString.insert(1, "0");
-    }
-
-    string wordSplitter(int acc)
-    {
-
     }
 
     void overflowCheck(){
@@ -313,6 +375,7 @@ public:
         {
             if (word[i] != '+' && word[i] != '-') ss << word[i];
         }
+        //cout << "ss = " << ss.str() << endl;
         int value = stoi(ss.str());
         if (neg) return (value * -1);
         else return value;
