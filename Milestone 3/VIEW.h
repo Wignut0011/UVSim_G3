@@ -1,5 +1,6 @@
 #ifndef VIEW_H
 #define VIEW_H
+
 #include "MenuStrings.h"
 #include "MEMORY.h"
 //#include "CPU.h"
@@ -9,45 +10,112 @@
 #include <string>
 #include <vector>
 
+using namespace std;
+
 //Enumerations, these are not attributes.
-enum resolution :size_t{WIDTH = 120, HEIGHT = 30, PRINT_LINE = 19}; //Resolution line consts
-enum errorTypes :size_t{SIGN = 1, INV_OPCODE = 2, OVER_FLOW = 3, UNDER_FLOW = 4};//Error types thrown by CPU
-enum messageType :size_t{INV_MESSAGE = 0, LOAD_SUCCESS = 1, LOAD_FAIL = 2, SAVE_SUCCESS = 3, SAVE_FAIL = 4, 
-                        LOAD_REJECTION = 5, EXECUTION_REJECTION = 6, SIGN_ERROR = 7, INV_ERROR = 8, OVER_WARNING = 9, 
-                        UNDER_WARNING = 10, WRITE_TEMPLATE = 11, READ_TEMPLATE = 12, HALT_MESSAGE = 13};
-enum mainPages :size_t{MAIN = 0, README_1 = 1, README_2 = 2, README_3 = 3, README_4 = 4, README_5 = 5,
-                        EDIT = 6, EXEC = 7, SAVE = 8, LOAD = 9};
-enum formatting :size_t{CURR_PAGE_NUM = 0, EXEC_PAGES = 1, MEM_PAGES = 2, LINE_SPACE = 3};
-enum tokenIndex :size_t{LINE_TOKEN = 0, PAGE_TOKEN = 1, ADDR_TOKEN = 2, VAL_TOKEN = 3, STATUS_TOKEN = 4};
+enum resolution :size_t     {WIDTH = 120, HEIGHT = 30, PRINT_LINE = 19}; //Resolution line consts
+
+enum errorTypes :size_t     {SIGN = 1, INV_OPCODE = 2, OVER_FLOW = 3, UNDER_FLOW = 4};//Error types thrown by CPU
+
+enum messageType :size_t    {INV_MESSAGE = 0, LOAD_SUCCESS = 1, LOAD_FAIL = 2, SAVE_SUCCESS = 3, SAVE_FAIL = 4,
+                             LOAD_REJECTION = 5, EXECUTION_REJECTION = 6, SIGN_ERROR = 7, INV_ERROR = 8,
+                             OVER_WARNING = 9, UNDER_WARNING = 10, WRITE_TEMPLATE = 11, READ_TEMPLATE = 12,
+                             HALT_MESSAGE = 13};
+
+enum mainPages :size_t      {MAIN = 0, README_1 = 1, README_2 = 2, README_3 = 3, README_4 = 4, README_5 = 5,
+                             EDIT = 6, EXEC = 7, SAVE = 8, LOAD = 9};
+
+enum subPages :size_t       {ED_COPY = 10, ED_CUT = 11, ED_PASTE = 12, ED_INSERT = 13, ED_DELETE = 14, NEXT_SUB = 15,
+                             PREV_SUB = 16};
+
+enum formatting :size_t     {CURR_PAGE_NUM = 0, EXEC_PAGES = 1, MEM_PAGES = 2, LINE_SPACE = 3, CURR_MEM_PAGE = 4};
+
+enum tokenIndex :size_t     {LINE_TOKEN = 0, PAGE_TOKEN = 1, ADDR_TOKEN = 2, VAL_TOKEN = 3, STATUS_TOKEN = 4,
+                             CLIP_TOKEN = 5};
 
 
 class VIEW{
 public:
     //Constructor
-    VIEW(){pageFormat[CURR_PAGE_NUM] = 0; pageFormat[MEM_PAGES] = 1; pageFormat[LINE_SPACE] = PRINT_LINE;};
+    VIEW(string& c): clipboard(c){pageFormat[CURR_PAGE_NUM] = 0;pageFormat[MEM_PAGES] = 1;pageFormat[LINE_SPACE] = PRINT_LINE;}
 
 //Displays a requested page
-    void Display(const int& p){
-        pageFormat[CURR_PAGE_NUM] = p; //At page 'p'
-        currPage.str(menus.getMenu(p)); //Get menu page from library facade
+    void Display(const int& p) {
+        if (p >= mainPages::MAIN && p <= mainPages::LOAD) { //A menu page
+            pageFormat[CURR_PAGE_NUM] = p; //At page 'p'
+            currPage.str(menus.getMenu(p)); //Get menu page from library facade
 
-        //Check which page was loaded to put fist page num
-        if(p == EDIT || p == EXEC)
-            currPage.str(regex_replace(currPage.str(), regex(TOKENS[PAGE_TOKEN]), to_string(1)+" "));
+            //Check which page was loaded to put fist page num
+            if (p == EDIT || p == EXEC)
+                currPage.str(regex_replace(currPage.str(), regex(TOKENS[PAGE_TOKEN]), to_string(1) + " "));
 
-        else if (p == MAIN) {
-            currPage.str(regex_replace(currPage.str(), regex(TOKENS[STATUS_TOKEN]), "  "));
-            pageFormat[EXEC_PAGES] = 1;
+            else if (p == MAIN) {
+                currPage.str(regex_replace(currPage.str(), regex(TOKENS[STATUS_TOKEN]), "  "));
+                pageFormat[EXEC_PAGES] = 1;
+            }
+            if (p == EXEC) {
+                pageFormat[LINE_SPACE] = PRINT_LINE;
+            }
+
+            //Check if loaded page is right resolution of 120x30 chars
+            Validate(stringstream(currPage.str()));
+
+            cout << regex_replace(currPage.str(), regex(TOKENS[LINE_TOKEN]), "  "); //Update View
+            cout.flush();
         }
-        if (p == EXEC){
-            pageFormat[LINE_SPACE] = PRINT_LINE;
+
+        else if(p >= subPages::ED_COPY && p <=subPages::PREV_SUB) { //Sub-menu
+
+            string output = menus.getMenu(p); //Reload sub-menu
+
+            if (p == NEXT_SUB || p == PREV_SUB) { //Next memory page
+                //Update current page
+                (p == NEXT_SUB) ? pageFormat[CURR_MEM_PAGE]++ : pageFormat[CURR_MEM_PAGE]--;
+
+                //Populate with saved data
+                string line;
+                for (auto l : memCache[CURR_MEM_PAGE]) { //Populate list starting at last page
+                    if (l != '\n') //Add char to line
+                        line += l;
+
+                    else { //Add line to page
+                        output = regex_replace(output, regex(string(TOKENS[LINE_TOKEN]) + "( ){" +
+                                               to_string(line.size()) + "}"), line, regex_constants::format_first_only);
+                    }
+                }
+            }
+            else {
+                pageFormat[CURR_PAGE_NUM] = p;
+
+                //Populate page no
+                output = regex_replace(output, regex(TOKENS[PAGE_TOKEN]), to_string(pageFormat[MEM_PAGES]) +
+                                                                          ((pageFormat[MEM_PAGES] < 10) ? " " : ""));
+
+                string line;
+                for (auto l : memCache[MEM_PAGES]) { //Populate list starting at last page
+                    if (l != '\n') //Add char to line
+                        line += l;
+
+                    else { //Add line to page
+                        output = regex_replace(output, regex(string(TOKENS[LINE_TOKEN]) + "( ){" +
+                                                             to_string(line.size()) + "}"), line,
+                                               regex_constants::format_first_only);
+                    }
+                }
+            }
+            output = regex_replace(output,regex(TOKENS[LINE_TOKEN]), "  "); //Empty line tokens
+
+            //Does sub-menu need clipboard?
+            if (p == ED_INSERT || p == ED_PASTE) {
+                output = regex_replace(output,regex(string(TOKENS[CLIP_TOKEN])+"( ){"+
+                                                    to_string(clipboard.size()-2)+"}"), clipboard);
+            }
+            cout << output; //Update View
         }
 
-        //Check if loaded page is right resolution of 120x30 chars
-        Validate(stringstream(currPage.str()));
-
-        cout << regex_replace(currPage.str(), regex(TOKENS[LINE_TOKEN]), "  "); //Update View
-        cout.flush();
+        else //Not a valid menu number
+            throw logic_error(string("Simulator attempted to access menu '" +
+                                     to_string(pageFormat[CURR_PAGE_NUM]) + "' that does not exist, "));
     }
 
     //Display the memory on the load/save page. True = load, False = save
@@ -59,7 +127,8 @@ public:
         for (size_t i = 0; i < 15 && i < load.getMap().size(); ++i) {
             currPage.str(regex_replace(currPage.str(), regex(string(TOKENS[LINE_TOKEN])+"( ){"+
                                        to_string(load.getMap()[i].length()+2)+"}"),
-                                       ((i>9)?to_string(i):(" ")+to_string(i))+": "+load.getMap()[i], regex_constants::format_first_only)); //Update line
+                                       ((i>9)?to_string(i):(" ")+to_string(i))+": "+load.getMap()[i],
+                                       regex_constants::format_first_only)); //Update line
         }
 
         cout << regex_replace(currPage.str(), regex(TOKENS[LINE_TOKEN]), "  "); //Update View
@@ -103,20 +172,18 @@ public:
 
     //Display line on screen in Edit Mode
     void DispLine(const string& line){
-
         if (pageFormat[CURR_PAGE_NUM] != EDIT)//Make sure we are in the right page.
             throw logic_error(string("ERROR: Simulator attempted to display a line in Edit mode while in page "
                                            + to_string(pageFormat[CURR_PAGE_NUM])));
 
         //If max line has been reached, add new page
-        pageFormat[LINE_SPACE]++;
-        if (pageFormat[LINE_SPACE] >= HEIGHT){
-            pageFormat[MEM_PAGES]++; //Push to page vector
-            currPage.str(menus.getMenu(EDIT));
-            currPage.str(regex_replace(currPage.str(), regex(TOKENS[PAGE_TOKEN]),
-                                       string(to_string(pageFormat[MEM_PAGES])+((pageFormat[MEM_PAGES]<9)? " ":""))));
-            pageFormat[LINE_SPACE] = PRINT_LINE;
-        }
+        NewPage(MEM_PAGES, EDIT);
+
+        //Update memCache
+        if (pageFormat[MEM_PAGES] > memCache.size()) //New page was added
+            memCache.emplace_back(line);
+        else
+            memCache.back().append("\n"+line);
 
         currPage.str(regex_replace(currPage.str(), regex(TOKENS[LINE_TOKEN]+"( ){"+
                                         to_string(line.length()-2)+"}"), line, regex_constants::format_first_only)); //Update line
@@ -128,9 +195,24 @@ public:
     //Continues the memory state of Edit Mode
     void ContinueEdit(MEMORY mem){
         if (pageFormat[CURR_PAGE_NUM] != MAIN)//Make sure we are in the right page.
-            throw logic_error(string("Simulator attempted to access Edit Mode not from the main menu, "
-                                           "but instead in page " + to_string(pageFormat[CURR_PAGE_NUM])));
+            throw logic_error(string("Simulator attempted to access Edit Mode not from main menu or sub-menu, "
+                                     "but instead in page " + to_string(pageFormat[CURR_PAGE_NUM])));
+
+        pageFormat[MEM_PAGES] = 0;//Reset mem page curr
+
+        for (auto l : mem.getMap()) {//Reset memCache
+            if (l.first % 9 == 0) { //Append new page
+                pageFormat[MEM_PAGES]++;
+                memCache.emplace_back(l.second);
+            }
+
+            else{ //Insert to current page
+                memCache.back().append("\n" + l.second);
+            }
+        }
+        pageFormat[CURR_MEM_PAGE] = pageFormat[MEM_PAGES];
         pageFormat[CURR_PAGE_NUM] = EDIT;
+        pageFormat[EXEC_PAGES] = 1;
 
         if (!pageFormat[MEM_PAGES]) {
             if (mem.getMap().size() > 9)
@@ -180,16 +262,7 @@ public:
                                            + to_string(pageFormat[CURR_PAGE_NUM]) + " instead of Execution Page"));
 
         //If max line has been reached, add new page
-        pageFormat[LINE_SPACE]++;
-        if (pageFormat[LINE_SPACE] >= HEIGHT){
-            pageFormat[EXEC_PAGES]++; //Push to page vector
-            currPage.str(menus.getMenu(EXEC));
-            currPage.str(regex_replace(currPage.str(), regex(TOKENS[PAGE_TOKEN]),
-                                       string(to_string(pageFormat[EXEC_PAGES])+((pageFormat[EXEC_PAGES]<10)? " ":""))));
-            pageFormat[LINE_SPACE] = PRINT_LINE;
-        }
-
-        string error;
+        NewPage(EXEC_PAGES, EXEC);
 
         //Error type switch case
         switch (type) {
@@ -236,14 +309,7 @@ public:
                                      + to_string(pageFormat[CURR_PAGE_NUM]) + " instead of Execution Page"));
 
         //If max line has been reached, add new page
-        pageFormat[LINE_SPACE]++;
-        if (pageFormat[LINE_SPACE] >= HEIGHT){
-            pageFormat[EXEC_PAGES]++; //Push to page vector
-            currPage.str(menus.getMenu(EXEC));
-            currPage.str(regex_replace(currPage.str(), regex(TOKENS[PAGE_TOKEN]), to_string(pageFormat[EXEC_PAGES])+
-                                                                          ((pageFormat[EXEC_PAGES]<10)?" ":"")));
-            pageFormat[LINE_SPACE] = PRINT_LINE;
-        }
+        NewPage(EXEC_PAGES, EXEC);
 
         currPage.str(regex_replace(currPage.str(), regex(TOKENS[LINE_TOKEN]+"( ){"+
                                         to_string(MESSAGES[HALT_MESSAGE].size()-2)+"}"), MESSAGES[HALT_MESSAGE],
@@ -267,14 +333,7 @@ public:
         output = regex_replace(output, regex(TOKENS[VAL_TOKEN]), to_string(value));
 
         //If max line has been reached, add new page
-        pageFormat[LINE_SPACE]++;
-        if (pageFormat[LINE_SPACE] >= HEIGHT){
-            pageFormat[EXEC_PAGES]++; //Push to page vector
-            currPage.str(menus.getMenu(EXEC));
-            currPage.str(regex_replace(currPage.str(), regex(TOKENS[PAGE_TOKEN]),
-                                       to_string(pageFormat[EXEC_PAGES])+((pageFormat[EXEC_PAGES]<10)?" ":"")));
-            pageFormat[LINE_SPACE] = PRINT_LINE;
-        }
+        NewPage(EXEC_PAGES, EXEC);
 
         currPage.str(regex_replace(currPage.str(), regex(TOKENS[LINE_TOKEN]+"( ){"+
                                         to_string(output.size()-2)+"}"), output, regex_constants::format_first_only)); //Put write message in page
@@ -300,17 +359,9 @@ public:
         }
 
         //Prompt the user for input
-        else {
+        else{
             //If max line has been reached, add new page
-            pageFormat[LINE_SPACE]++;
-            if (pageFormat[LINE_SPACE] >= HEIGHT) {
-                pageFormat[EXEC_PAGES]++; //Push to page vector
-                currPage.str(menus.getMenu(EXEC));
-                currPage.str(
-                        regex_replace(currPage.str(), regex(TOKENS[PAGE_TOKEN]), to_string(pageFormat[EXEC_PAGES]) +
-                                           ((pageFormat[EXEC_PAGES] < 10) ? " ": "")));
-                pageFormat[LINE_SPACE] = PRINT_LINE;
-            }
+            NewPage(EXEC_PAGES, EXEC);
 
             currPage.str(regex_replace(currPage.str(), regex(TOKENS[LINE_TOKEN] + "( ){" +
                          to_string(MESSAGES[READ_TEMPLATE].size() - 2) + "}"),
@@ -328,12 +379,14 @@ public:
 
 private:
     //Index names are enumerated on top
+    string& clipboard;
     MenuStrings menus;
     stringstream currPage; //What is currently displayed on the view
-    size_t pageFormat[4]; //Holds data for page formatting.
+    size_t pageFormat[5]; //Holds data for page formatting.
+    vector<string> memCache;
 
     //CONST string tokens, regex replace tokens
-    const string TOKENS[5] = {"%l", "%p" ,"%a", "%v", "%s"};
+    const string TOKENS[6] = {"%l", "%p" ,"%a", "%v", "%s", "%c"};
 
     //CONST string messages, pre-made template messages
     const string MESSAGES[14] = {"ERROR: Invalid Option, try again. > ",
@@ -371,5 +424,24 @@ private:
 
         //Validation passed
     }
+
+    //If max line has been reached, add new page
+    void NewPage(size_t formatIndex, size_t menuNo) {
+        pageFormat[LINE_SPACE]++;
+        if (pageFormat[LINE_SPACE] >= HEIGHT) {
+            //Check if MemPages are not out of bounds
+            if (formatIndex == MEM_PAGES && pageFormat[MEM_PAGES] > 10)
+                throw logic_error("VIEW attempted to add a new page to it's memory page indexing beyond the 10 page limit.");
+
+            pageFormat[formatIndex]++; //Push to page vector
+            currPage.str(menus.getMenu(menuNo));
+            currPage.str(regex_replace(currPage.str(), regex(TOKENS[PAGE_TOKEN]),
+                                       to_string(pageFormat[formatIndex]) +
+                                       ((pageFormat[formatIndex] < 10) ? " ": "")));
+            pageFormat[LINE_SPACE] = PRINT_LINE;
+        }
+    }
+
 };
+
 #endif

@@ -5,15 +5,17 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
-#include "VIEW.h"
+//#include "VIEW.h"
 
 using namespace std;
-enum :size_t {FILES = 10};
+enum :size_t {FILES = 15};
 
 class MenuStrings{
     //width 120, height 30.
     vector<string> pages;
-    string pageNames[FILES] = {"MainMenu.txt","Readme1.txt","Readme2.txt","Readme3.txt","Readme4.txt","Readme5.txt","EditMode.txt","ExecuteMode.txt","Save.txt","Load.txt"};
+    string pageNames[FILES] = {"MainMenu.txt","Readme1.txt","Readme2.txt","Readme3.txt","Readme4.txt","Readme5.txt",
+                               "EditMode.txt","ExecuteMode.txt","Save.txt","Load.txt","Copy.txt", "Cut.txt", "Paste.txt",
+                               "Insert.txt", "Delete.txt"};
 public:
     MenuStrings(){
         setupMenus();

@@ -2,5 +2,7 @@
 HW/
 Deliverables/
 cmake-build-debug/
+cmake-build-debug-mingw/
+cmake-build-debug-mingw-pthread/
 .idea/
 .vscode/

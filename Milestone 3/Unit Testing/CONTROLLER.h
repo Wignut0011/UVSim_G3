@@ -5,13 +5,12 @@
 
 class CONTROLLER{
     const string saveFile = "Save.mem";
-    string& clipboard;
     MODEL& model;
     VIEW& view;
 
 public:
     //Constructor
-    CONTROLLER(MODEL &m, VIEW &v, string &c): model(m), view(v), clipboard(c){}
+    CONTROLLER(MODEL &m, VIEW &v): model(m), view(v){}
 
 
     /// TODO: Make sure prompts on main menu/ read me files match up with expected input for page navigation
@@ -51,13 +50,13 @@ public:
 
                 if (uInput.length() == 6)
                 {
-                    if (uInput == "-99999") /// user is done with program and not to save
+                    if (uInput == "-99999") // user is done with program and not to save
                     {
                         view.Display(MAIN);
                         done = true;
 //                        uInput = "+0000";
                     }
-                    else if (uInput == "+99999") /// user would like to return to main menu and save their progress
+                    else if (uInput == "+99999") // user would like to return to main menu and save their progress
                     {
 //                        return false;
                         if (!model.hasMemory())

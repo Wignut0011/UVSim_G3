@@ -56,6 +56,5 @@ public:
         ///memlocation is going to be from 0-99
         memory.add(move(uInput), memLocation);
     }
-    // updateMemory(GetMemory.getMap[i-1], i)
 };
 #endif
