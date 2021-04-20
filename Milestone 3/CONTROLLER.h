@@ -77,6 +77,58 @@ public:
                         }
                         done = true;
                     }
+                    else if(uInput != "-99999" || uInput != "+99999"){
+                        map clipboard;
+                        switch(uInput){
+                            case 1: { //Copy
+                                view.Display(10);
+                                cin>>lineNum;
+                                clipboard = model.GetMemory().getMap().at(lineNum);
+                                break;
+                            }
+                            case 2: { //Cut
+                                view.Display(11);
+                                cin>>lineNum;
+                                clipboard = model.GetMemory().getMap().at(lineNum);
+
+                                //TODO finding the way to close the map
+                                view.ContinueEdit();
+                                break;
+                            }
+                            case 3: { //Paste
+                                //find the place in the map that needs the pasting
+                                map location = model.GetMemory().getMap().at(lineNum);
+                                map location = lineNum;
+                                view.ContinueEdit();
+                                break;
+                            }
+                            case 4: { //Insert
+                                view.Display(13);
+                                cin>>lineNum;
+                                map firstMove = model.GetMemory().getMap().at(lineNum); //getting the data from the lineNum
+                                map copy = firstMove;
+                                firstMove = infoFromPaste; //TODO
+                                for(int i = 0; i < model.GetMemory().getMap().size() +1; i++){
+
+                                }
+                                view.ContinueEdit();
+                                break;
+                            }
+                        }
+                    }
+
+
+                        view.ContinueEdit(); //TODO
+                    }
+                    else if(uInput = 14){ //delete request
+                        Display(uInput);
+                    }
+                    else if(uInput = 15){ //next subpage request
+                        Display(uInput);
+                    }
+                    else if(uInput = 16){ //previous subpage request
+                        Display(uInput);
+                    }
                     else // user input an invalid 5 digit exit code
                     {
                         view.DisplayInvalid();
