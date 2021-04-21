@@ -78,50 +78,84 @@ public:
                         done = true;
                     }
                     else if(uInput != "-99999" || uInput != "+99999"){
-                        map clipboard;
+                        string clipboard; ///this is the only way to get data for the rest of the functions
                         switch(uInput){
                             case 1: { //Copy
                                 view.Display(10);
-                                cin>>lineNum;
-                                clipboard = model.GetMemory().getMap().at(lineNum);
+                                cin>>lineNum; //get the selected lineNum
+                                clipboard = model.GetMemory().getMap().at(lineNum); //this gives me the string value
                                 break;
                             }
-                            case 2: { //Cut
+                            case 2: { //DONE
                                 view.Display(11);
                                 cin>>lineNum;
-                                clipboard = model.GetMemory().getMap().at(lineNum);
+                                //cut out line and get the string that the user requests.
+                                clipboard = model.GetMemory().getMap().at(lineNum); //this gives us the string
 
-                                //TODO finding the way to close the map
+                                //TODO
+                                //go through and collapse the container when removing the desired line
+                                for(int i = 0; i < model.GetMemory().getMap().size(); i++){
+
+                                }
+
                                 view.ContinueEdit();
                                 break;
                             }
-                            case 3: { //Paste
+                            case 3: { //DONE
+                                view.Display(12);
                                 //find the place in the map that needs the pasting
                                 map location = model.GetMemory().getMap().at(lineNum);
-                                map location = lineNum;
+                                //replace the string at the location with the clipboard.
+                                map location->second = clipBoard;
                                 view.ContinueEdit();
                                 break;
                             }
-                            case 4: { //Insert
+                            case 4: { //Insert whatever is on the clipboard.
                                 view.Display(13);
-                                cin>>lineNum;
-                                map firstMove = model.GetMemory().getMap().at(lineNum); //getting the data from the lineNum
-                                map copy = firstMove;
-                                firstMove = infoFromPaste; //TODO
-                                for(int i = 0; i < model.GetMemory().getMap().size() +1; i++){
+                                cin>>lineNum; ///grab the location to insert new code
+                                map a;
+                                map b;
+                                //pull out what is in that line as a string
+                                string saveMe = model.GetMemory().getMap().at(lineNum);
+                                //stick the clipboard into that spot.
+                                model.GetMemory().getMap().at(lineNum) = clipboard;
+                                //Find in the map where to begin iterating.
+                                //this should probably be the next spot.
+
+                                //TODO
+                                map loopBegin = model.GetMemory().getMap().find(lineNum+1); //this gives the iterator location.
+                                for(loopBegin; loopBegin <= model.GetMemory().getMap().count(); loopBegin++) {
+                                    //this should be the swap function now.
+                                    //must use ->second to access the strings.
+                                    //get the string from the first element and store it.
+                                    //get the string from the second element and store it.
+                                    //place the first string in the second element location.
+                                    //grab the 3rd element string and store it.
+                                    //place the second string in the 3rd element location.
+                                    //
+                                    //
+                                    //when the end of the map is reached insert a new location with the remaining data.
 
                                 }
                                 view.ContinueEdit();
                                 break;
                             }
-                        }
+                            case 5:{ ///Delete request
+                                view.Display(14);
+                                cin>>lineNum;
+                                map deleteME = model.GetMemory().getMap().at(lineNum);
+
+                                //TODO
+                                //loop to collapse the container.
+                                //it will be the same loop as the cut request.
+
+                                view.ContinueEdit();
+                            }
+
                     }
 
 
-                        view.ContinueEdit(); //TODO
-                    }
-                    else if(uInput = 14){ //delete request
-                        Display(uInput);
+
                     }
                     else if(uInput = 15){ //next subpage request
                         Display(uInput);
