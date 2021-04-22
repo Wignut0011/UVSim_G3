@@ -81,87 +81,130 @@ public:
                         string clipboard; ///this is the only way to get data for the rest of the functions
                         switch(uInput){
                             case 1: { //Copy
-                                view.Display(10);
+                                view.Display(subPages::ED_COPY);
                                 cin>>lineNum; //get the selected lineNum
-                                clipboard = model.GetMemory().getMap().at(lineNum); //this gives me the string value
-                                break;
-                            }
-                            case 2: { //DONE
-                                view.Display(11);
-                                cin>>lineNum;
-                                //cut out line and get the string that the user requests.
-                                clipboard = model.GetMemory().getMap().at(lineNum); //this gives us the string
-
-                                //TODO
-                                //go through and collapse the container when removing the desired line
-                                for(int i = 0; i < model.GetMemory().getMap().size(); i++){
-
+                                switch(lineNum){
+                                    case 1:{
+                                        view.Display(subPages::NEXT_SUB);
+                                        break;
+                                    }
+                                    case 2:{
+                                        view.Display(subPages::PREV_SUB);
+                                        break;
+                                    }
+                                    case 3:{
+                                        view.ContinueEdit(model.GetMemory());
+                                    }
+                                    default:{
+                                        clipboard = model.GetMemory().getMap().at(lineNum);
+                                        break;
+                                    }
                                 }
-
-                                view.ContinueEdit();
+                                view.ContinueEdit(model.GetMemory());
+                            }
+                            case 2: { //Cut
+                                view.Display(subPages::ED_CUT);
+                                cin>>lineNum;
+                                case 1:{
+                                    view.Display(subPages::NEXT_SUB);
+                                    break;
+                                }
+                                case 2:{
+                                    view.Display(subPages::PREV_SUB);
+                                    break;
+                                }
+                                case 3:{
+                                    view.ContinueEdit(model.GetMemory());
+                                }
+                                default:{
+                                    clipboard = model.GetMemory().getMap().at(lineNum); //gives a string
+                                    for(int i = lineNum; i != model.GetMemory().getMap().size()-1; i++){
+                                        model.GetMemory().getMap().at(i) = model.GetMemory().getMap().at(i+1);
+                                    }
+                                    model.GetMemory().getMap().erase(model.GetMemory().getMap().size());
+                                    break;
+                                }
+                                view.ContinueEdit(model.GetMemory());
                                 break;
                             }
                             case 3: { //DONE
-                                view.Display(12);
-                                //find the place in the map that needs the pasting
-                                map location = model.GetMemory().getMap().at(lineNum);
-                                //replace the string at the location with the clipboard.
-                                map location->second = clipBoard;
-                                view.ContinueEdit();
+                                view.Display(subPages::ED_PASTE);
+                                cin<<lineNum;
+                                case 1:{
+                                    view.Display(subPages::NEXT_SUB);
+                                    break;
+                                }
+                                case 2:{
+                                    view.Display(subPages::PREV_SUB);
+                                    break;
+                                }
+                                case 3:{
+                                    view.ContinueEdit(model.GetMemory());
+                                }
+                                default:{
+                                    model.updateMemory(clipboard, lineNum);
+                                    break;
+                                }
+                                view.ContinueEdit(model.GetMemory());
                                 break;
                             }
                             case 4: { //Insert whatever is on the clipboard.
-                                view.Display(13);
+                                view.Display(subPages::ED_INSERT);
                                 cin>>lineNum; ///grab the location to insert new code
-                                map a;
-                                map b;
-                                //pull out what is in that line as a string
-                                string saveMe = model.GetMemory().getMap().at(lineNum);
-                                //stick the clipboard into that spot.
-                                model.GetMemory().getMap().at(lineNum) = clipboard;
-                                //Find in the map where to begin iterating.
-                                //this should probably be the next spot.
-
-                                //TODO
-                                map loopBegin = model.GetMemory().getMap().find(lineNum+1); //this gives the iterator location.
-                                for(loopBegin; loopBegin <= model.GetMemory().getMap().count(); loopBegin++) {
-                                    //this should be the swap function now.
-                                    //must use ->second to access the strings.
-                                    //get the string from the first element and store it.
-                                    //get the string from the second element and store it.
-                                    //place the first string in the second element location.
-                                    //grab the 3rd element string and store it.
-                                    //place the second string in the 3rd element location.
-                                    //
-                                    //
-                                    //when the end of the map is reached insert a new location with the remaining data.
-
+                                case 1:{
+                                    view.Display(subPages::NEXT_SUB);
+                                    break;
+                                }
+                                case 2:{
+                                    view.Display(subPages::PREV_SUB);
+                                    break;
+                                }
+                                case 3:{
+                                    view.ContinueEdit(model.GetMemory());
+                                }
+                                default:{
+                                    model.GetMemory().getMap()[model.GetMemory().getMap().size()] = model.GetMemory().getMap()[model.GetMemory().getMap().size()-1];
+                                    for(int i = model.GetMemory().getMap().size()-1; i != lineNum; i--){
+                                        model.GetMemory().getMap().at(i) = model.GetMemory().getMap().at(i-1);
+                                    }
+                                    model.updateMemory(clipboard, lineNum);
+                                    break;
+                                }
+                                view.ContinueEdit(model.GetMemory());
+                                break;
+                            }
+                            case 5:{ ///Delete request
+                                view.Display(subPages::ED_DELETE);
+                                cin>>lineNum;
+                                switch(lineNum){
+                                    case 1:{
+                                        view.Display(subPages::NEXT_SUB);
+                                        break;
+                                    }
+                                    case 2:{
+                                        view.Display(subPages::PREV_SUB);
+                                        break;
+                                    }
+                                    case 3:{
+                                        view.ContinueEdit(model.GetMemory());
+                                        break;
+                                    }
+                                    default:{
+                                        for(int i = lineNum; i != model.GetMemory().getMap().size()-1; i++){
+                                            model.GetMemory().getMap().at(i) = model.GetMemory().getMap().at(i+1);
+                                        }
+                                        model.GetMemory().getMap().erase(model.GetMemory().getMap().size());
+                                        break;
+                                    }
                                 }
                                 view.ContinueEdit();
                                 break;
                             }
-                            case 5:{ ///Delete request
-                                view.Display(14);
-                                cin>>lineNum;
-                                map deleteME = model.GetMemory().getMap().at(lineNum);
 
-                                //TODO
-                                //loop to collapse the container.
-                                //it will be the same loop as the cut request.
-
-                                view.ContinueEdit();
-                            }
-
-                    }
+                        }
 
 
 
-                    }
-                    else if(uInput = 15){ //next subpage request
-                        Display(uInput);
-                    }
-                    else if(uInput = 16){ //previous subpage request
-                        Display(uInput);
                     }
                     else // user input an invalid 5 digit exit code
                     {
