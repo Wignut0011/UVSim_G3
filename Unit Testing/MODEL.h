@@ -40,7 +40,7 @@ public:
 
     ///not totally sure what this is supposed to accomplish yet. I think I got it though.
     void updateMenu(int page){
-        if(page == 6 && hasMemory()){
+        if(page == mainPages::EDIT && hasMemory()){
             view.ContinueEdit(memory);
         }
         else
@@ -56,5 +56,6 @@ public:
         ///memlocation is going to be from 0-99
         memory.add(move(uInput), memLocation);
     }
+    // updateMemory(GetMemory.getMap[i-1], i)
 };
 #endif

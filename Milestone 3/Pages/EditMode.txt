@@ -23,7 +23,7 @@
 |                                                                                                                     |
 |                                                                                                                     |
 |     Valid Commands:                                                                                                 |
-|     -99999: Exit without saving                                                                                     |
-|     +99999: Exit and save                                                                                           |
+|     -99999: Exit without saving            1: Copy            3: Paste             5: Delete                        |
+|     +99999: Exit and save                  2: Cut             4: Insert                                             |
 |                                                                                                                     |
 =======================================================================================================================

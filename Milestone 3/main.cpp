@@ -1,16 +1,17 @@
 #include "CONTROLLER.h"
 #include <stdexcept>
 #include <iostream>
+#include <string>
 
-//using namespace std;
+string clipboard; //Clipboard to be used in the program
 
 int main(){
-    VIEW view;
-    MODEL model(view);
-    CONTROLLER controller((MODEL&)model, (VIEW&)view);
+    ///Daniel Espinel
+    VIEW view(clipboard);
+    MODEL model((VIEW&)view);
+    CONTROLLER controller((MODEL&)model, (VIEW&)view, clipboard);
 
-//
-
+    ///Eric Manley
     try{controller.StartSimulator();}
     catch (std::logic_error &err) {
         std::cout << "\nLOGIC ERROR: " << err.what() << "\nEXITING...\n";

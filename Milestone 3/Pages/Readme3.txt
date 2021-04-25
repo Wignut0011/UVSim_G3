@@ -15,10 +15,10 @@
 |     Hint: You may want to reserve a block of lines for data, if so, you can use it as pure data, or you may want    |
 |     to leave it empty increase you want to save data during execution.                                              |
 |                                                                                                                     |
-|     CAUTION: Be aware of the arithmetic you are asking the simulator to perform. Since each word is limited to 4    |
+|     CAUTION: Be aware of the arithmetic you are asking the simulator to perform. Since each result is at max 6      |
 |     digits, you may experience an overflow or underflow if the arithmetic results in a higher/lower digit number.   |
-|     IE: Once it reaches the limit of +9999, it will wrap back to the other limit of -9999 and continue, resulting   |
-|     in a false answer.                                                                                              |
+|     IE: Once it reaches the limit of 999999, it will wrap back to the other limit of -999999 and continue,          |
+|     resulting in a false answer.                                                                                    |
 |                                                                                                                     |
 |                                                                                                                     |
 |     Choose an option:                                                                                               |
