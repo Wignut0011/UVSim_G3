@@ -8,11 +8,13 @@
 
 using namespace std;
 
+///Dane Manley
+
 class MemDump : public VIEW{
 public:
     static void createDump(CPU cpu) {
-//        curMap = cpu.memory;
-//        prevMap = curMap;
+        int isDouble = 0;
+
         //An empty memory, for some strange reason, made it's way here
         if (cpu.memory.empty())
             throw logic_error("For some reason, dump received an empty CPU. How? How did this happen?");
@@ -42,11 +44,22 @@ public:
                 else
                     line = to_string(i);
             }
-            string memory = cpu.memory[i];
+            string memory = "";
+            memory = cpu.memory[i];
             size_t addZero = 5 - memory.length();
+            if (memory[1] == '+' || memory[1] == '-')
+                isDouble++;
 
-            for (int j = 0; j < addZero; j++)
-                memory.insert(1, "0");
+            for (int j = 0; j < addZero; j++) {
+                if (isDouble == 1)
+                    memory.insert(2, "0");
+                if (isDouble == 2)
+                    memory.append("0");
+                else
+                    memory.insert(1, "0");
+            }
+            if (isDouble == 2)
+                isDouble = 0;
 
             line += "  " + memory;
             if (i % 10 == 9)
@@ -59,6 +72,6 @@ public:
         cout.flush();
     }
 private:
-    MemDump()= default;;
+    MemDump()= default;
 };
 #endif

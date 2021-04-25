@@ -1,24 +1,24 @@
 =======================================================================================================================
 |     _   ___   __  ___ ___ __  __                                                                                    |
-|    | | | \ \ / / / __|_ _|  \/  |             ==============                                                        |
-|    | |_| |\ V /  \__ \| || |\/| |             Execution Mode                                                        |
-|     \___/  \_/   |___|___|_|  |_|             ==============                                                        |
+|    | | | \ \ / / / __|_ _|  \/  |           ==================                                                      |
+|    | |_| |\ V /  \__ \| || |\/| |           Editing Mode cont.                                                      |
+|     \___/  \_/   |___|___|_|  |_|           ==================                                                      |
+|                                                                                                                     |
+|     You can use the clipboard operations Copy, Cut, Paste, Insert, and Delete within Editing Mode. To use these     |
+|     operations by typing the "1" to "5" for the respective operations. When you do so, you will enter a submenu     |
+|     where you can traverse your entire submitted code and select a line.                                            |
 |                                                                                                                     |
 |                                                                                                                     |
+|     Copy  : The line you select will be copied into the internal clipboard.                                         |
 |                                                                                                                     |
+|     Cut   : The line you select will be copied into the internal clipboard and deleted from your memory.            |
 |                                                                                                                     |
+|     Paste : The line you select will be overwritten with the line in the clipboard                                  |
 |                                                                                                                     |
-|          In order to start this mode, you need to have a staged memory module. If no memory module                  |
-|          create one in Editing Mode or load one.                                                                    |
-|          has been staged, you can't run this mode yet. To have a module staged, you either have to                  |
+|     Insert: The line you select, and all lines after it, will be shifted one position and the clipboard will be     |
+|             pasted into the selected line.                                                                          |
 |                                                                                                                     |
-|          Once in Execution Mode, the simulator will start to execute the instructions in the staged                 |
-|          memory module. Depending on your instructions, you may be prompted to input a number during                |
-|          it's runtime. Once a HALT instruction has been reached, or line 99 had been executed,                      |
-|          Execution Mode will end and a dump of the memory and each register will be printed on the                  |
-|          screen. Once you are done reviewing the dump, you will be put back into the main menu.                     |
-|                                                                                                                     |
-|                                                                                                                     |
+|     Delete: The line you select will be deleted.                                                                    |
 |                                                                                                                     |
 |                                                                                                                     |
 |     Choose an option:                                                                                               |

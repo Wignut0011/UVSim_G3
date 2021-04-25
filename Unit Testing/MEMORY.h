@@ -2,9 +2,6 @@
 #define MEMORY_H
 #include <map>
 #include <string>
-
-///Santiago Ramirez
-
 class MEMORY{
 public:
     //initialize map

@@ -2,14 +2,10 @@
 #define CPU_H
 #include <map> //Memory
 #include <string>
+//#include <algorithm> //If needed
+//#include <iostream>
 #include <utility>
 #include "VIEW.h"
-
-/// Dane Manley      - Overall Design
-/// Anthony Peterson - Arithmetic Instructions
-///                  - "Double Word" feature
-/// Santiago Ramirez - IO and LOAD/STORE Instructions
-/// Daniel Espinel   - Branch Instructions
 
 enum registerIndex: size_t{ACCUMULATOR = 0, IC = 1, OPCODE = 2, OPERAND = 3, LONG_ACC1 = 98, LONG_ACC2 = 99};
 
@@ -85,7 +81,6 @@ public:
             }
             //switch case for each instruction
             switch (registers[OPCODE]) {
-                ///Santiago Ramirez Begin
                 case 10:
                     //Read();
                     //1007 = grab first input from the user and put it into desired memory location
@@ -121,7 +116,7 @@ public:
                 case 11:
                     //Write();
                     //write command; take memory location 09 and give it to the screen to print.
-                    // check for double words
+                    /// check for double words
                     if (doubleWord)
                     {
                         view.DisplayWrite(registers[OPERAND], StrToInt(memory[registers[OPERAND]] + memory[registers[OPERAND] + 1]));
@@ -132,7 +127,7 @@ public:
                 case 20:
                     //Load();    Load a word from a specific location in memory into the accumulator
                     //load command; integer from location 07 is loaded into accumulator
-                    // check for double words
+                    /// check for double words
 
                     if (memory[registers[OPERAND]][1] == '+' || memory[registers[OPERAND]][1] == '-')// double word found in memory
                     {
@@ -151,8 +146,8 @@ public:
                 case 21:
                     //Store();   Store a word from the accumulator into a specific location in memory
                     //store command; take the added number and store it in the memory location 09
-                    // If accumulator is holding a 3 digit word, this indicates the accumulator is holding the first half of a double world. All other words should be 4 digits.
-                    // If it is, store 98 in the specified location and 99 in the proceeding location
+                    /// If accumulator is holding a 3 digit word, this indicates the accumulator is holding the first half of a double world. All other words should be 4 digits.
+                    /// If it is, store 98 in the specified location and 99 in the proceeding location
 
                     //if (to_string(registers[ACCUMULATOR]).length() == 3)
                     if (doubleWord)
@@ -167,14 +162,13 @@ public:
                         if (registers[ACCUMULATOR] >= 0) memory[registers[OPERAND]].insert(0, "+");
                         //else memory[registers[OPERAND]].insert(0, "-");
                     }
-                    break;
-                ///Santiago Ramirez End
 
-                ///Anthony Peterson Begin
+                    break;
+
                 case 30:
                     //Add();
                     initializeAccumulator();
-                    // Add double word from memory to accumulator
+                    /// Add double word from memory to accumulator
                     if (memory[registers[OPERAND]][1] == '+' || memory[registers[OPERAND]][1] == '-')// double word found in memory
                     {
                         if (sign) registers[ACCUMULATOR] += StrToInt((memory[registers[OPERAND]]) + memory[registers[OPERAND] + 1]); // accumulator adds full 2 word number
@@ -189,7 +183,7 @@ public:
                 case 31:
                     //Subtract();
                     initializeAccumulator();
-                    // Subtract double word from memory from accumulator
+                    /// Subtract double word from memory from accumulator
                     if (memory[registers[OPERAND]][1] == '+' || memory[registers[OPERAND]][1] == '-')// double word found in memory
                     {
                         if (sign) registers[ACCUMULATOR] -= StrToInt((memory[registers[OPERAND]]) + memory[registers[OPERAND] + 1]); // accumulator subtracts full 2 word number
@@ -204,7 +198,7 @@ public:
                 case 32:
                     //Divide();
                     initializeAccumulator();
-                    // Divide accumulator with double word from memory
+                    /// Divide accumulator with double word from memory
                     if (memory[registers[OPERAND]][1] == '+' || memory[registers[OPERAND]][1] == '-')// double word found in memory
                     {
                         registers[ACCUMULATOR] /= StrToInt((memory[registers[OPERAND]]) + memory[registers[OPERAND] + 1]); // accumulator subtracts full 2 word number
@@ -218,7 +212,7 @@ public:
                 case 33:
                     //Multiply();
                     initializeAccumulator();
-                    // Divide accumulator with double word from memory
+                    /// Divide accumulator with double word from memory
                     if (memory[registers[OPERAND]][1] == '+' || memory[registers[OPERAND]][1] == '-')// double word found in memory
                     {
                         registers[ACCUMULATOR] *= StrToInt((memory[registers[OPERAND]]) + memory[registers[OPERAND] + 1]); // accumulator subtracts full 2 word number
@@ -228,10 +222,8 @@ public:
                     else registers[ACCUMULATOR] *= StrToInt(memory[registers[OPERAND]]);
                     sixDigitSplit();
                     break;
-                ///Anthony Peterson End
 
-                ///Daniel Espinel Begin
-                //BRANCH
+                    //BRANCH
                 case 40:
                     //Branch to address in operand
                     i = abs(registers[OPERAND]) - 1;
@@ -255,7 +247,6 @@ public:
                     registers[IC] = i;
                     halt = true;
                     break;
-                ///Daniel Espinel End
 
                     //INVALID OPCODE
                 default:
@@ -284,7 +275,6 @@ public:
                 accString.insert(1, "0");
     }
 
-    ///Anthony Peterson
     void initializeAccumulator()
     {
         /// Makes sure accumulator is properly initialized with double words
@@ -301,7 +291,6 @@ public:
             if (!sign) registers[ACCUMULATOR] *= -1;
         }
     }
-    ///Anthony Peterson
     void sixDigitSplit()
     {
         /// After the accumulator splits a word up, it automatically stores it in slots 98 and 99. Accumulator should hold the leading word afterwards (98). 98 and 99 are exclusively used for accumulator memory.
@@ -341,7 +330,6 @@ public:
         }
     }
 
-    ///Anthony Peterson
     void overflowCheck(){
         //Overflow
         //error code 3
@@ -363,7 +351,6 @@ public:
             overflowCheck();
     }
 
-    /// Daniel Espinel
     // Returns signed int from string
     //*stoi() doesn't like strings that have '+' or '-'
     int StrToInt(string word){
